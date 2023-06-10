@@ -426,77 +426,102 @@ struct costos* lista_costos(){
 
 //Crea una lista con los usuarios que tienen "fechabaja = 0".(ACTIVIDAD 1)
 struct medxusuario *lista_rutacaminante(){
-	FILE *medx; //puntero para el archivo "MedXUsuario.txt"
+	FILE *medx = NULL; //puntero para el archivo "MedXUsuario.txt"
 	struct medxusuario *nv=NULL,*L=NULL;
-	char linea[1000],aux[100];
-	int i,j;
+	char linea[1000],aux[100], periodo[7],nomArchivo[30] = "Ruta_caminante_",anio[5],mes[3];
+	int i,j,b = 0,a,m;
+	
+	while(b != 1){
+		
+		printf("Ingrese el periodo (aaaamm): ");
+		gets(periodo);
+		
+		strncpy(anio,periodo,4);
+		anio[4] = '\0';
+		strncpy(mes,periodo + 4,2);
+		mes[2] = '\0';
+		a = atoi(anio);
+		m = atoi(mes);
 
-	if((medx=fopen("MedXUsuario.txt","r"))!=NULL){
-		while(!feof(medx)){
-			nv = (struct medxusuario *) malloc(sizeof(struct medxusuario));
-			if(nv!=NULL){
-				i=0;
-				j=0;
-
-				fgets(linea,sizeof(linea),medx);
-
-				memset(aux,0,100);
-				while(linea[i]!=','){
-					aux[j] = linea[i];
-					j++; i++;
-				}
-				nv->idusuario = atol(aux);
-
-				i++; j=0;
-				memset(aux,0,100);
-				while(linea[i]!=','){
-					aux[j] = linea[i];
-					j++; i++;
-				}
-				nv->idmedidor = atol(aux);
-
-				i++;j=0;
-				memset(aux,0,100);
-				while(linea[i]!=','){
-					aux[j] = linea[i];
-					j++; i++;
-				}
-				nv->idcuenta = atol(aux);
-
-				i++;j=0;
-				memset(aux,0,100);
-				while(linea[i]!=','){
-					aux[j] = linea[i];
-					j++; i++;
-				}
-				nv->fechaalta = atol(aux);
-
-				i++;j=0;
-				memset(aux,0,100);
-				while(linea[i]!=','){
-					aux[j] = linea[i];
-					j++; i++;
-				}
-				nv->fechabaja = atol(aux);
-
-				nv->sgte = NULL;
-				
-				if((nv->fechabaja == 0)&&(nv->fechaalta <= fecha)){
-					L = insertar_medxusuario(nv,L);
-				}
-				
-				nv = NULL;
-				
-					
-			}
-			else
-				printf("Error");
+		if((a != 2023)||(m < 1)||(m > 12)){//ajustar rango
+			printf("\nERROR: fecha no valida\n");
+		}else{
+			b = 1;
 		}
-	}
-	else
-		printf("Error");
 
-	fclose(medx);
+	}
+	
+	if((ruta=fopen(nomArchivo,"r"))!=NULL){
+		printf("\nERROR: este archivo ya fue creado\n");
+		fclose(ruta);
+	}else{
+		if((medx=fopen("MedXUsuario.txt","r"))!=NULL){
+			while(!feof(medx)){
+				nv = (struct medxusuario *) malloc(sizeof(struct medxusuario));
+				if(nv!=NULL){
+					i=0;
+					j=0;
+	
+					fgets(linea,sizeof(linea),medx);
+	
+					memset(aux,0,100);
+					while(linea[i]!=','){
+						aux[j] = linea[i];
+						j++; i++;
+					}
+					nv->idusuario = atol(aux);
+	
+					i++; j=0;
+					memset(aux,0,100);
+					while(linea[i]!=','){
+						aux[j] = linea[i];
+						j++; i++;
+					}
+					nv->idmedidor = atol(aux);
+	
+					i++;j=0;
+					memset(aux,0,100);
+					while(linea[i]!=','){
+						aux[j] = linea[i];
+						j++; i++;
+					}
+					nv->idcuenta = atol(aux);
+	
+					i++;j=0;
+					memset(aux,0,100);
+					while(linea[i]!=','){
+						aux[j] = linea[i];
+						j++; i++;
+					}
+					nv->fechaalta = atol(aux);
+	
+					i++;j=0;
+					memset(aux,0,100);
+					while(linea[i]!=','){
+						aux[j] = linea[i];
+						j++; i++;
+					}
+					nv->fechabaja = atol(aux);
+	
+					nv->sgte = NULL;
+					
+					if((nv->fechabaja == 0)&&(nv->fechaalta <= fecha)){
+						L = insertar_medxusuario(nv,L);
+					}
+					
+					nv = NULL;
+					
+						
+				}
+				else
+					printf("Error");
+			}
+		}
+		else
+			printf("Error");
+	
+		fclose(medx);
+	}
 	
 	return L;
 }
@@ -689,25 +714,21 @@ void crearuta(struct medxusuario *l){
 	strcat(nomArchivo,mes);
 	strcat(nomArchivo,".txt");
 	
-	if((ruta=fopen(nomArchivo,"r"))!=NULL){
-		printf("\nERROR: este archivo ya fue creado\n");
-		fclose(ruta);
-	}else{
-		if((ruta=fopen(nomArchivo,"w"))!=NULL){
-			while(l != NULL){
-				if(l->sgte == NULL){ //Si es el ultimo nodo de la lista no debe imprimir "\n" para evitar problemas
-					fprintf(ruta,"%ld,%s,",l->idcuenta,periodo);
-				}
-				else{
-					fprintf(ruta,"%ld,%s,\n",l->idcuenta,periodo);
-				}
-				l = l->sgte;
+	
+	
+	if((ruta=fopen(nomArchivo,"w"))!=NULL){
+		while(l != NULL){
+			if(l->sgte == NULL){ //Si es el ultimo nodo de la lista no debe imprimir "\n" para evitar problemas
+				fprintf(ruta,"%ld,%s,",l->idcuenta,periodo);
 			}
+			else{
+				fprintf(ruta,"%ld,%s,\n",l->idcuenta,periodo);
+			}
+			l = l->sgte;
 		}
-		else printf("\nERROR: no se pudo abrir arvhivo\n");
+	}else printf("\nERROR: no se pudo abrir arvhivo\n");
 
-		fclose(ruta);
-	}
+	fclose(ruta);
 	
 }
 //-------------------------------------------------------------------------------------
